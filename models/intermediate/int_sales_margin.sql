@@ -14,6 +14,7 @@ select
     s.pdt_id,
     s.revenue,
     s.quantity,
+    s.date_date,
     p.purchase_price,
     (s.quantity * p.purchase_price) as purchase_cost,
     (s.revenue - (s.quantity * p.purchase_price)) as margin
