@@ -47,3 +47,4 @@
              description: the cost of the logistics for Greenweez.
            - name: ship_cost
              description: the cost of shipping paid by GreenWeez.
+
