@@ -1,18 +1,29 @@
 with sales as (
     select 
-        * 
-    from {{ ref('stg_gz_raw_data__raw_gz_sales') }}
+        orders_id,
+        sum(revenue) as total_revenue,
+        sum(quantity) as total_quantity,
+        sum(revenue - (quantity * purchase_price)) as margin
+    from {{ ref('stg_gz_raw_data__raw_gz_sales') }} s
+    join {{ ref('stg_gz_raw_data__raw_gz_product') }} p on s.pdt_id = p.products_id
+    group by orders_id
 ),
-products as (
+shipping as (
     select 
-        * 
-    from {{ ref('stg_gz_raw_data__raw_gz_product') }}
+        orders_id,
+        sum(shipping_fee) as total_shipping_fee,
+        sum(logCost) as total_log_cost,
+        sum(ship_cost) as total_ship_cost
+    from {{ ref('stg_gz_raw_data__raw_gz_ship') }}
+    group by orders_id
 )
 
-select orders_id, date_date, 
-SUM (quantity) AS quantity,
-sum (s.quantity * p.purchase_price) as purchase_cost,
-sum (s.revenue - (s.quantity * p.purchase_price)) as margin
+select 
+    s.orders_id,
+    s.margin,
+    sh.total_shipping_fee,
+    sh.total_log_cost,
+    sh.total_ship_cost,
+    (s.margin + sh.total_shipping_fee - sh.total_log_cost - sh.total_ship_cost) as operational_margin
 from sales s
-join products p on s.pdt_id = p.products_id
-GROUP BY orders_id, date_date
+join shipping sh on s.orders_id = sh.orders_id
